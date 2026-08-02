@@ -52,3 +52,68 @@ You can also open `index.html` directly in a browser; a local static server is r
 ## Implementation notes
 
 This service uses Nevada State Plane East (feet), not Web Mercator. The viewer uses the ArcGIS Maps SDK for JavaScript, which reads the service tile scheme and spatial reference automatically.
+
+## Deploy to Cloudflare
+
+**Use Cloudflare Pages, not Workers.**
+
+This project is a static `index.html` that loads the ArcGIS SDK and imagery tiles from third-party hosts. There is no server-side logic, API routes, or build step. [Cloudflare Pages](https://developers.cloudflare.com/pages/) is the right fit: it serves static files, supports Git-based deploys, preview URLs on pull requests, and custom domains.
+
+Choose **Workers** only if you later add edge logic (for example, proxying tile requests, injecting auth headers, or rate limiting). That is not needed for the current viewer.
+
+### Option A — Pages via Git (recommended)
+
+1. Open [Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers-and-pages) in the Cloudflare dashboard.
+2. Select **Create** → **Pages** → **Connect to Git**.
+3. Choose the `fmgltdlv/Basemaptest` repository.
+4. Use these build settings:
+
+   | Setting | Value |
+   |---------|-------|
+   | Framework preset | None |
+   | Build command | *(leave empty)* |
+   | Build output directory | `.` |
+
+5. Select **Save and Deploy**.
+
+Cloudflare will deploy `index.html` from the repo root on each push to the production branch. Pull request previews are created automatically if enabled in the project settings.
+
+### Option B — Pages via Wrangler CLI
+
+Install Wrangler and log in once:
+
+```bash
+npm install -g wrangler
+wrangler login
+```
+
+Deploy the site:
+
+```bash
+npm run deploy
+```
+
+Or directly:
+
+```bash
+npx wrangler pages deploy . --project-name=basemaptest
+```
+
+`node_modules` is gitignored and is not uploaded.
+
+### Option C — Workers static assets (optional)
+
+If you prefer a Worker hostname (`*.workers.dev`) or plan to add edge code later:
+
+```bash
+npx wrangler deploy .
+```
+
+Wrangler will prompt to create a static-assets configuration on first run. No `wrangler.jsonc` is required upfront.
+
+For this repo today, **Option A or B (Pages)** is simpler and sufficient.
+
+### After deploy
+
+- Set a custom domain under **Pages** → your project → **Custom domains** if needed.
+- The map loads scripts from `js.arcgis.com` and tiles from `maps.clarkcountynv.gov`; no extra Cloudflare configuration is required unless you add a restrictive Content Security Policy.
