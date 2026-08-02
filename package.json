@@ -1,0 +1,13 @@
+{
+  "name": "basemaptest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Test viewer for Clark County, NV aerial imagery MapServer",
+  "scripts": {
+    "start": "serve . -l 3000",
+    "dev": "npm start"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
